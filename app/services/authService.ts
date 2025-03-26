@@ -425,7 +425,12 @@ export const citas = async (): Promise<{ success: boolean; data?: any[]; message
   };
 
 // Función para registrar una nueva cita
-export const createCita = async (fecha: string, hora: string, id_paciente: number, id_medico: number, detalle: string): Promise<{ success: boolean; data?: any; message?: string }> => {
+export const createCita = async (fecha: string, hora: string, id_paciente: number, id_medico: number, detalle: string): Promise<{ success: boolean; data?: {
+  id_cita: string; // ← Asegúrate que esto esté en el tipo
+  fecha: string;
+  hora: string;
+  id_paciente: number, id_medico: number, detalle: string
+}; message?: string }> => {
     try {
       if (!fecha || !hora || !id_paciente || !id_medico) {
         return { 

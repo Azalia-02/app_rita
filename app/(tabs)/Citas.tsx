@@ -106,7 +106,21 @@ export default function CitasScreen() {
     return hours;
   };
 
-  const fechaStr = formData.fecha.toISOString().split('T')[0];
+  const resetForm = () => {
+    setFormData({
+      id_cita: '',
+      fecha: new Date(),
+      hora: '09:00',
+      id_paciente: '',
+      id_medico: '',
+      detalle: ''
+    });
+  };
+
+  const getNombreCompleto = (persona: Paciente | Medico | undefined) => {
+    if (!persona) return 'No encontrado';
+    return `${persona.nombre} ${persona.app} ${persona.apm}`;
+  };
 
   const handleSave = async () => {
     setLoading(true);
@@ -118,6 +132,8 @@ export default function CitasScreen() {
   
       const idPaciente = Number(formData.id_paciente);
       const idMedico = Number(formData.id_medico);
+
+      const fechaStr = formData.fecha.toISOString().split('T')[0];
   
       const response = await createCita(
         fechaStr,                     
@@ -126,36 +142,26 @@ export default function CitasScreen() {
         idMedico,
         formData.detalle || ""        
       );
+
+      console.log("Respuesta del backend:", response);
   
       if (response.success && response.data) {
-        const paciente = listaPacientes.find(p => p.id_paciente === idPaciente);
-        const medico = listaMedicos.find(m => m.id_medico === idMedico);
-        
-        const nuevasCitas = [...listaCitas, {
-          ...response.data,
-          paciente_nombre: paciente ? `${paciente.nombre} ${paciente.app} ${paciente.apm}` : '',
-          medico_nombre: medico ? `${medico.nombre} ${medico.app} ${medico.apm}` : ''
-        }];
-
-        const resetForm = () => {
-          setFormData({
-            id_cita: '',
-            id_paciente: '',
-            id_medico: '',
-            fecha: new Date(),
-            hora: '09:00',
-            detalle: ''
-          });
+        const nuevaCita: Cita = {
+          id_cita: response.data.id_cita,
+          fecha: response.data.fecha || fechaStr,
+          hora: response.data.hora || formData.hora,
+          id_paciente: response.data.id_paciente || idPaciente,
+          id_medico: response.data.id_medico || idMedico,
+          detalle: response.data.detalle || formData.detalle || "",
+          paciente_nombre: getNombreCompleto(listaPacientes.find(p => p.id_paciente === idPaciente)),
+          medico_nombre: getNombreCompleto(listaMedicos.find(m => m.id_medico === idMedico))
         };
-        
-        setListaCitas(nuevasCitas);
+  
+        setListaCitas(prev => [...prev, nuevaCita]);
         resetForm();
-      } else {
-        alert(response.message || 'Error al crear cita');
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Error de conexión con el servidor');
     } finally {
       setLoading(false);
     }
@@ -163,10 +169,10 @@ export default function CitasScreen() {
 
   const renderItem = ({ item }: { item: Cita }) => (
     <View style={styles.tableRow}>
-      <Text style={styles.tableCell}>{item.paciente_nombre}</Text>
-      <Text style={styles.tableCell}>{item.medico_nombre}</Text>
       <Text style={styles.tableCell}>{item.fecha}</Text>
       <Text style={styles.tableCell}>{item.hora}</Text>
+      <Text style={styles.tableCell}>{item.paciente_nombre}</Text>
+      <Text style={styles.tableCell}>{item.medico_nombre}</Text>
       <Text style={styles.tableCell}>{item.detalle}</Text>
     </View>
   );
@@ -266,20 +272,24 @@ export default function CitasScreen() {
 
       <Text style={styles.subtitle}>Citas Agendadas</Text>
       <View style={styles.tableHeader}>
+      <Text style={styles.headerCell}>Fecha</Text>
+      <Text style={styles.headerCell}>Hora</Text>
         <Text style={styles.headerCell}>Paciente</Text>
         <Text style={styles.headerCell}>Médico</Text>
-        <Text style={styles.headerCell}>Fecha</Text>
-        <Text style={styles.headerCell}>Hora</Text>
         <Text style={styles.headerCell}>Motivo</Text>
       </View>
       
       {listaCitas.length > 0 ? (
-        <FlatList
-          data={listaCitas}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id_cita.toString()}
-          scrollEnabled={false}
-        />
+       <FlatList
+       data={listaCitas || []}
+       renderItem={renderItem}
+       keyExtractor={(item) => 
+         `${item.id_cita}_${item.fecha}_${item.hora}`.replace(/\s+/g, '_')
+       }
+       scrollEnabled={false}
+       ListEmptyComponent={<Text>No hay citas</Text>}
+       initialNumToRender={10}
+     />
       ) : (
         <Text style={styles.noDataText}>No hay citas agendadas</Text>
       )}
@@ -291,7 +301,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f0f8ff',
   },
   title: {
     fontSize: 20,
