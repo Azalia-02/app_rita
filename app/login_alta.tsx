@@ -19,19 +19,24 @@ export default function RegisterScreen() {
             Alert.alert('Error', 'Todos los campos son obligatorios');
             return;
         }
-
+    
         setLoading(true);
-
+    
         try {
             const response = await loginRegister(nombre, app, apm, email, password, rol);
             console.log('Respuesta del servidor:', response);
-
+    
             if (response.success) {
-                router.push('/(tabs)/home');
+                if (rol === 'admin') {
+                    router.replace('/(tabs)/Pacientes');
+                } else if (rol === 'user') {
+                    router.replace('/Usuarios');
+                } 
             } else {
                 Alert.alert('Error', response.message || 'Error al registrar usuario');
             }
         } catch (error) {
+            console.error('Error en registro:', error);
             Alert.alert('Error', 'Error de conexión con el servidor');
         } finally {
             setLoading(false);

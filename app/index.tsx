@@ -6,14 +6,30 @@ import { loginUser } from "./services/authService";
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const handleLogin = async () => {
-        const result = await loginUser(email, password);
-        if (result.success) {
-            router.replace('/Pacientes');
-        } else {
-            Alert.alert('Error', 'Credenciales incorrectas');
+        setLoading(true);
+        try {
+            const result = await loginUser(email, password);
+            
+            if (result.success && result.data) {
+                const userRole = result.data.rol || result.data.rol || result.data.rol;
+                
+                if (userRole === 'admin') {
+                    router.replace('/(tabs)/Pacientes');
+                } else if (userRole === 'user') {
+                    router.replace('/Usuarios');
+                }
+            } else {
+                Alert.alert('Error', result.message || 'Credenciales incorrectas');
+            }
+        } catch (error) {
+            console.error('Error en login:', error);
+            Alert.alert('Error', 'Ocurrió un error al iniciar sesión');
+        } finally {
+            setLoading(false);
         }
     };
 

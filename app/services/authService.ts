@@ -3,7 +3,8 @@ import { storeData, getData } from "../utils/storage";
 const API_URL = 'http://192.168.0.13:3000';
 
 // Función para iniciar sesión
-export const loginUser = async (email: string, password: string): Promise<{ success: boolean; message?: string }> => {
+
+export const loginUser = async (email: string, password: string): Promise<{ success: boolean; message?: string; data?: { id_login: number; rol: 'admin' | 'user'; }; }> => {
     try {
         console.log('Realizando solicitud de login a:', `${API_URL}/api/redirige`);
         console.log('Datos enviados:', { email, password });
@@ -22,7 +23,12 @@ export const loginUser = async (email: string, password: string): Promise<{ succ
         console.log('Respuesta del servidor (data):', data);
 
         if (response.ok && data.id_login) { 
-            return { success: true };
+            return { success: true,
+              data: {
+                id_login: data.id_login,
+                rol: data.rol || 'user' ,
+              }
+             };
         }
         return { success: false, message: data.msg || 'Error en login' };
     } catch (error) {
@@ -425,12 +431,7 @@ export const citas = async (): Promise<{ success: boolean; data?: any[]; message
   };
 
 // Función para registrar una nueva cita
-export const createCita = async (fecha: string, hora: string, id_paciente: number, id_medico: number, detalle: string): Promise<{ success: boolean; data?: {
-  id_cita: string; // ← Asegúrate que esto esté en el tipo
-  fecha: string;
-  hora: string;
-  id_paciente: number, id_medico: number, detalle: string
-}; message?: string }> => {
+export const createCita = async (fecha: string, hora: string, id_paciente: number, id_medico: number, detalle: string): Promise<{ success: boolean; data?: {id_cita: string; fecha: string; hora: string; id_paciente: number, id_medico: number, detalle: string }; message?: string }> => {
     try {
       if (!fecha || !hora || !id_paciente || !id_medico) {
         return { 

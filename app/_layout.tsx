@@ -13,6 +13,7 @@ export default function RootLayout (){
       <Stack.Screen name="paciente_editar" options={{ title: 'Actualizar Paciente' }} />
       <Stack.Screen name="paciente_detalle" options={{ title: 'Detalle Paciente' }} />
       <Stack.Screen name="cita_alta" options={{ title: 'Nueva Cita' }} />
+      <Stack.Screen name="Usuarios" options={{ title: 'Usuarios' }} />
     </Stack>
   )
 }
