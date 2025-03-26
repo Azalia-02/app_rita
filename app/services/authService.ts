@@ -1,6 +1,6 @@
 import { storeData, getData } from "../utils/storage";
 
-const API_URL = 'http://192.168.0.13:3000';
+const API_URL = 'http://3.83.41.64:3003';
 
 // Función para iniciar sesión
 
